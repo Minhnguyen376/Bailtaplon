@@ -18,9 +18,11 @@
 #include "player.h"
 #include "ground.h"
 
+//screen size
 const int SCREEN_WIDTH = 1000;
 const int SCREEN_HEIGHT = 480;
 
+//player status
 const int ALIVE = 0;
 const int CURSOR_DEATH = 1;
 const int HOLE_DEATH = 2;
@@ -29,25 +31,30 @@ const Uint8 *keyState;
 
 RenderWindow window;
 
+//texture, res
 std::vector<SDL_Texture *> playerTex;
 SDL_Texture *groundTex[4][4];
 SDL_Texture *background[4];
 SDL_Texture *arrow;
 SDL_Texture *highscoreBox;
 
+//font
 TTF_Font *font32;
 TTF_Font *font32_outline;
 TTF_Font *font24;
 TTF_Font *font16;
 
+//màu chữ
 SDL_Color white = {255, 255, 255};
 SDL_Color black = {0, 0, 0};
 
+// Sound
 Mix_Chunk *jumpSfx;
 Mix_Chunk *fallSfx;
 Mix_Chunk *hitSfx;
 Mix_Chunk *clickSfx;
 Mix_Music *music;
+// Điều khiển game status
 bool gameRunning = true;
 bool playedDeathSFX = false;
 bool mainMenu = true;
@@ -62,11 +69,13 @@ bool init()
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
 	srand((unsigned)time(0));
-
+	
+	// Load texture player (3 layers)
 	playerTex.push_back(window.loadTexture("res/textures/player/player_2.png"));
 	playerTex.push_back(window.loadTexture("res/textures/player/player_3.png"));
 	playerTex.push_back(window.loadTexture("res/textures/player/player_4.png"));
 
+	// Load các bộ texture nền (3 nền 1 lỗ)
 	groundTex[0][0] = window.loadTexture("res/textures/ground/left (1).png");
 	groundTex[0][1] = window.loadTexture("res/textures/ground/center (1).png");
 	groundTex[0][2] = window.loadTexture("res/textures/ground/right (1).png");
@@ -80,6 +89,7 @@ bool init()
 	groundTex[2][2] = window.loadTexture("res/textures/ground/right (3).png");
 	groundTex[2][3] = window.loadTexture("res/textures/ground/hole (3).png");
 
+	// bg và giao diện
 	background[0] = window.loadTexture("res/bg/bg (1).png");
 	background[1] = window.loadTexture("res/bg/bg (2).png");
 	background[2] = window.loadTexture("res/bg/bg (5).png");
@@ -87,12 +97,14 @@ bool init()
 	arrow = window.loadTexture("res/textures/arrow.png");
 	highscoreBox = window.loadTexture("res/textures/highscore_box.png");
 
+	//load font 
 	font32 = TTF_OpenFont("res/fonts/cocogoose.ttf", 32);
 	font32_outline = TTF_OpenFont("res/fonts/cocogoose.ttf", 32);
 	font24 = TTF_OpenFont("res/fonts/cocogoose.ttf", 24);
 	font16 = TTF_OpenFont("res/fonts/cocogoose.ttf", 16);
 	TTF_SetFontOutline(font32_outline, 3);
 
+	// Load âm thanh
 	jumpSfx = Mix_LoadWAV("res/sounds/jump.wav");
 	fallSfx = Mix_LoadWAV("res/sounds/fall.wav");
 	hitSfx = Mix_LoadWAV("res/sounds/hit.wav");
@@ -104,11 +116,11 @@ bool init()
 }
 
 bool load = init();
-
+// Tạo đối tượng chính
 Player player(0, 0, playerTex);
 Ground ground;
 
-void reset()
+void reset() // Reset lại game status khi chết/ đổi nền
 {
 	player.reset();
 	ground.reset();
@@ -127,7 +139,7 @@ struct Button
 		h = _h;
 	}
 };
-
+// Menu
 Button playButton(400, 210, 180, 24);
 Button MuteButtom(400, 300, 64, 24);
 Button UnmuteButtom(400, 300, 100, 24);
@@ -135,6 +147,7 @@ Button UpBottom(570, 300, 32, 32);
 Button DownBottom(540, 300, 32, 32);
 Button quitButton(400, 330, 50, 24);
 
+// Kiểm tra chuột có nằm trong nút không
 bool isMouseIn(SDL_Event e, Button button)
 {
 	int mouseX, mouseY;
@@ -153,10 +166,13 @@ bool isMouseIn(SDL_Event e, Button button)
 		return true;
 	}
 }
+// Sound control
 bool mute = false;
 const int VOLUME_music_max = MIX_MAX_VOLUME / 2;
 int VOLUME_music = MIX_MAX_VOLUME / 2;
 int VOLUME_chuck = MIX_MAX_VOLUME / 2;
+
+//Loop game
 void gameLoop()
 {
 	SDL_Event event;
@@ -185,7 +201,7 @@ void gameLoop()
 		}
 		case SDL_MOUSEBUTTONDOWN:
 		{
-			if (mainMenu)
+			if (mainMenu) // Xử lý nút menu
 			{
 				if (isMouseIn(event, quitButton))
 				{
@@ -233,7 +249,8 @@ void gameLoop()
 						Mix_VolumeChunk(fallSfx, 0);
 						Mix_VolumeChunk(hitSfx, 0);
 						Mix_VolumeChunk(clickSfx, 0);
-						mute = true;
+						mute = true; 
+						// tắt hết âm
 					}
 					Mix_VolumeMusic(VOLUME_music);
 				}
@@ -268,8 +285,10 @@ void gameLoop()
 		}
 	}
 
+	// Hiển thị
 	if (mainMenu)
 	{
+		// Intro splash
 		if (SDL_GetTicks() < 2500)
 		{
 
@@ -301,6 +320,7 @@ void gameLoop()
 	}
 	else
 	{
+		// Cập nhật game
 		if (player.isDead() != CURSOR_DEATH)
 		{
 			ground.update(player.getScoreInt());
@@ -323,6 +343,7 @@ void gameLoop()
 
 			playedDeathSFX = true;
 		}
+		// Render gameplay
 		window.clear();
 		window.render(-90, 0, background[id]);
 		window.render(player);
@@ -336,6 +357,7 @@ void gameLoop()
 		window.render(0, 65, highscoreBox);
 		window.render(65, 64, player.getHighscore(), font16, white);
 
+		// Hiển thị thông báo chết
 		if (player.isDead() != ALIVE)
 		{
 			window.renderCenter(0, -75, "High score: " + std::to_string(player.highscore), font24, white);
@@ -353,6 +375,7 @@ void gameLoop()
 			window.renderCenter(0, 12, "Click to retry.", font16, white);
 		}
 	}
+	// Pause
 	if (paused)
 	{
 		window.renderCenter(0, -24, "Pause", font24, white);
@@ -367,13 +390,13 @@ void gameLoop()
 				}
 		}
 	}
-	window.display();
+	window.display(); // Xuất hình lên màn hình
 }
 
 int main(int argc, char *args[])
 {
 
-	FILE *f = fopen("storage.dat", "r");
+	FILE *f = fopen("storage.dat", "r"); // Đọc file lưu âm lượng và highscore
 	if (!f)
 		std::cerr << ":(( on r";
 	fscanf(f, "%d", &VOLUME_music);
@@ -382,15 +405,20 @@ int main(int argc, char *args[])
 	Mix_VolumeMusic(VOLUME_music);
 	if (VOLUME_music == 0)
 		mute = true;
-	ground.add(groundTex[id][0], groundTex[id][1], groundTex[id][2], groundTex[id][3]);
+	ground.add(groundTex[id][0], groundTex[id][1], groundTex[id][2], groundTex[id][3]); // Khởi tạo nền đất ban đầu
+
+	// Bắt đầu vòng lặp game
 	while (gameRunning)
 	{
 		gameLoop();
 		SDL_Delay(20);
 	}
+	// Ghi lại highscore và âm lượng khi thoát
 	FILE *fp = fopen("storage.dat", "w");
 	fprintf(fp, "%d %d", VOLUME_music, player.highscore);
 	fclose(fp);
+
+	// Dọn dẹp
 	window.cleanUp();
 	TTF_CloseFont(font32);
 	TTF_CloseFont(font32_outline);
