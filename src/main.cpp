@@ -13,6 +13,8 @@
 #include <cmath>
 #include <stdlib.h>
 #include <string.h>
+
+//class
 #include "renderwindow.h"
 #include "entity.h"
 #include "player.h"
@@ -27,9 +29,9 @@ const int ALIVE = 0;
 const int CURSOR_DEATH = 1;
 const int HOLE_DEATH = 2;
 
-const Uint8 *keyState;
+const Uint8 *keyState; // Trạng thái phím
 
-RenderWindow window;
+RenderWindow window; // Tạo cửa sổ
 
 //texture, res
 std::vector<SDL_Texture *> playerTex;
@@ -59,6 +61,7 @@ bool gameRunning = true;
 bool playedDeathSFX = false;
 bool mainMenu = true;
 
+//bắt đầu khởi tạo game
 bool init()
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
