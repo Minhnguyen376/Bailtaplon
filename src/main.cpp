@@ -297,7 +297,7 @@ void gameLoop()
 
 			window.clear();
 			window.render(background[3]);
-			window.renderCenter(0, sin(SDL_GetTicks() / 100) * 2 - 4, "Jump - Jump", font24, white);
+			window.renderCenter(0, sin(SDL_GetTicks() / 100) * 2 - 4, "Jumping - Robot", font24, white);
 		}
 		else
 		{
